@@ -15,6 +15,7 @@
  */
 package com.google.firebase.udacity.friendlychat;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -53,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String ANONYMOUS = "anonymous";
     public static final int DEFAULT_MSG_LENGTH_LIMIT = 1000;
+
     public static final int RC_SIGN_IN = 1;
 
     private ListView mMessageListView;
@@ -81,8 +83,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize Firebase database components
         mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mMessagesDatabaseReference = mFirebaseDatabase.getReference().child("messages");
         mFirebaseAuth = FirebaseAuth.getInstance();
+
+        mMessagesDatabaseReference = mFirebaseDatabase.getReference().child("messages");
 
         // Initialize references to views
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -150,7 +153,6 @@ public class MainActivity extends AppCompatActivity {
                 if (user != null) {
                     // User is signed in
                     onSignedInInitialize(user.getDisplayName());
-
                 } else {
                     // User is signed out
                     onSignedOutCleanup();
@@ -169,6 +171,21 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_SIGN_IN) {
+            if (resultCode == RESULT_OK) {
+                // Sign-in succeeded, set up the UI
+                Toast.makeText(this, "Signed in!", Toast.LENGTH_SHORT).show();
+            } else if (resultCode == RESULT_CANCELED) {
+                // Sign in was canceled by the user, finish the activity
+                Toast.makeText(this, "Sign in canceled", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }
     }
 
     @Override
@@ -213,7 +230,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void attachDatabaseReadListener() {
         if (mChildEventListener == null) {
-
             // event listener to update MessageAdapter the each new message on database
             mChildEventListener = new ChildEventListener() {
                 @Override
@@ -239,7 +255,6 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             };
-
             mMessagesDatabaseReference.addChildEventListener(mChildEventListener);
         }
     }
